@@ -1,0 +1,93 @@
+--Joins--
+--inner join-Returns rows only where a match exists in both tables--
+SELECT b.BookID, b.Title, c.CategoryName
+FROM Book b
+INNER JOIN Category c ON b.CategoryID = c.CategoryID;
+
+--left outer join-Returns all rows from left table, plus matching rows from right.Unmatched right rows become NULL.
+SELECT b.BookID, b.Title, c.CategoryName
+FROM Book b
+LEFT JOIN Category c ON b.CategoryID = c.CategoryID;
+
+--right outer join - since sql lite did not supported right join , simulation done by reversing the left join
+--Returns all rows from right table, plus matching rows from left.(unmatched rows beconmes null)
+SELECT c.CategoryID, c.CategoryName, b.Title
+FROM Category c
+LEFT JOIN Book b ON c.CategoryID = b.CategoryID;
+
+--full outer join- Returns all rows from both tables — matched and unmatched.
+--SQLite does not support FULL JOIN natively, so we use UNION of LEFT + RIGHT:
+SELECT c.CategoryName, b.Title
+FROM Category c
+LEFT JOIN Book b ON c.CategoryID = b.CategoryID
+UNION
+SELECT c.CategoryName, b.Title
+FROM Category c
+RIGHT JOIN Book b ON c.CategoryID = b.CategoryID;
+
+--cross join: Returns all combinations (Cartesian product).
+SELECT b.Title, m.FirstName || ' ' || m.LastName AS MemberName
+FROM Book b
+CROSS JOIN Member m;
+
+--self join:Join a table with itself
+SELECT m1.FirstName || ' ' || m1.LastName AS Member1,
+       m2.FirstName || ' ' || m2.LastName AS Member2
+FROM Member m1
+INNER JOIN Member m2 
+ON m1.LastName = m2.LastName
+AND m1.MemberID = m2.MemberID;
+
+--Natural Join : Matches columns with the same name automatically (no ON clause needed).
+SELECT *
+FROM Book
+NATURAL JOIN Category;
+
+--equi join
+--This is basically an INNER JOIN using = in the ON clause.
+SELECT b.Title, c.CategoryName
+FROM Book b, Category c
+WHERE b.CategoryID = c.CategoryID;
+
+--non equi join Uses operators other than = in join condition.
+-- Example: find loans and members where MemberID < 2
+SELECT l.LoanID, m.FirstName
+FROM Loan1 l
+JOIN Member m ON l.MemberID < 2;
+
+--self outer join ,Like a self join, but keeps unmatched rows too.
+SELECT m1.MemberID, m1.LastName, m2.MemberID AS MatchMemberID
+FROM Member m1
+LEFT JOIN Member m2
+ON m1.LastName = m2.LastName
+AND m1.MemberID <> m2.MemberID;
+
+---ANTI JOIN (NOT EXISTS / LEFT JOIN with NULL)
+--Returns rows from left table that do NOT have a match in right table.
+-- Find members who have never borrowed a book
+SELECT m.MemberID, m.FirstName
+FROM Member m
+LEFT JOIN Loan1 l ON m.MemberID = l.MemberID
+WHERE l.LoanID IS NULL;
+
+--SEMI JOIN (EXISTS)
+--Returns rows from left table where a match exists in right table, but without duplicates from right.
+-- Find members who have borrowed at least one book
+SELECT m.MemberID, m.FirstName
+FROM Member m
+WHERE EXISTS (SELECT 1 FROM Loan1 l WHERE l.MemberID = m.MemberID);
+
+--SELF CROSS JOIN
+
+--Special case of CROSS JOIN with same table.
+-- Generate all member pairs
+SELECT m1.FirstName AS MemberA, m2.FirstName AS MemberB
+FROM Member m1
+CROSS JOIN Member m2
+WHERE m1.MemberID <> m2.MemberID;
+
+
+
+
+
+
